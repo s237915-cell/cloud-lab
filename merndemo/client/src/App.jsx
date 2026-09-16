@@ -1,39 +1,29 @@
 import { useEffect, useState } from 'react';
 
 function App() {
-    const [students, setStudents] = useState([]);
+    const API_URL = 'http://localhost:5000';
 
+    const [students, setStudents] = useState([]);
     const [studentId, setStudentId] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
 
-    // URL Backend trên GitHub Codespaces
-    const API_URL = 'https://opulent-memory-5vwpw67gxrr2469g-5000.app.github.dev';
-
-    // Lấy danh sách sinh viên
-    const fetchStudents = async () => {
+    const loadStudents = async () => {
         try {
             const response = await fetch(`${API_URL}/api/students`);
             const data = await response.json();
-
             setStudents(data);
         } catch (error) {
-            console.error('Lỗi khi lấy danh sách sinh viên:', error);
+            alert('Không thể kết nối Backend!');
         }
     };
 
     useEffect(() => {
-        fetchStudents();
+        loadStudents();
     }, []);
 
-    // Thêm sinh viên
-    const addStudent = async (e) => {
-        e.preventDefault();
-
-        if (!studentId || !name || !email) {
-            alert('Vui lòng nhập đầy đủ thông tin!');
-            return;
-        }
+    const addStudent = async (event) => {
+        event.preventDefault();
 
         try {
             const response = await fetch(`${API_URL}/api/students`, {
@@ -41,79 +31,120 @@ function App() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    studentId: studentId,
-                    name: name,
-                    email: email
-                })
+                body: JSON.stringify({ studentId, name, email })
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                alert(data.message || 'Có lỗi xảy ra!');
+                alert('Thêm sinh viên thất bại!');
                 return;
             }
-
-            alert('Thêm sinh viên thành công!');
 
             setStudentId('');
             setName('');
             setEmail('');
-
-            fetchStudents();
-
+            loadStudents();
         } catch (error) {
-            console.error('Lỗi:', error);
+            alert('Không thể kết nối Backend!');
+        }
+    };
+
+    const updateStudent = async (student) => {
+        const newStudentId = prompt('Nhập MSSV mới:', student.studentId);
+        if (newStudentId === null) return;
+
+        const newName = prompt('Nhập họ tên mới:', student.name);
+        if (newName === null) return;
+
+        const newEmail = prompt('Nhập email mới:', student.email);
+        if (newEmail === null) return;
+
+        try {
+            const response = await fetch(
+                `${API_URL}/api/students/${student._id}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId: newStudentId,
+                        name: newName,
+                        email: newEmail
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                alert('Cập nhật thất bại!');
+                return;
+            }
+
+            loadStudents();
+        } catch (error) {
+            alert('Không thể kết nối Backend!');
+        }
+    };
+
+    const deleteStudent = async (student) => {
+        if (!confirm(`Bạn có chắc muốn xóa sinh viên ${student.name}?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API_URL}/api/students/${student._id}`,
+                {
+                    method: 'DELETE'
+                }
+            );
+
+            if (!response.ok) {
+                alert('Xóa sinh viên thất bại!');
+                return;
+            }
+
+            loadStudents();
+        } catch (error) {
             alert('Không thể kết nối Backend!');
         }
     };
 
     return (
-        <div style={{ padding: '30px' }}>
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
             <h1>Quản lý sinh viên</h1>
 
             <h2>Thêm sinh viên</h2>
 
             <form onSubmit={addStudent}>
-
-                <div>
+                <p>
                     <input
-                        type="text"
-                        placeholder="MSSV"
                         value={studentId}
                         onChange={(e) => setStudentId(e.target.value)}
+                        placeholder="MSSV"
+                        required
                     />
-                </div>
+                </p>
 
-                <br />
-
-                <div>
+                <p>
                     <input
-                        type="text"
-                        placeholder="Họ tên"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        placeholder="Họ tên"
+                        required
                     />
-                </div>
+                </p>
 
-                <br />
-
-                <div>
+                <p>
                     <input
-                        type="email"
-                        placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email"
+                        type="email"
+                        required
                     />
-                </div>
+                </p>
 
-                <br />
-
-                <button type="submit">
-                    Thêm sinh viên
-                </button>
-
+                <button type="submit">Thêm sinh viên</button>
             </form>
 
             <h2>Danh sách sinh viên</h2>
@@ -121,10 +152,18 @@ function App() {
             {students.length === 0 ? (
                 <p>Chưa có sinh viên.</p>
             ) : (
-                <ul>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
                     {students.map((student) => (
-                        <li key={student._id}>
+                        <li key={student._id} style={{ marginBottom: '12px' }}>
                             {student.studentId} - {student.name} - {student.email}
+                            {' '}
+                            <button onClick={() => updateStudent(student)}>
+                                Cập nhật
+                            </button>
+                            {' '}
+                            <button onClick={() => deleteStudent(student)}>
+                                Xóa
+                            </button>
                         </li>
                     ))}
                 </ul>
@@ -134,4 +173,3 @@ function App() {
 }
 
 export default App;
-
