@@ -1,0 +1,13 @@
+services:
+  backend:
+    image: triquang237915/mern-backend:1.0
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      MONGODB_URI: ${MONGODB_URI}
+
+  frontend:
+    image: triquang237915/mern-frontend:1.0
+    ports:
+      - "4173:4173"
