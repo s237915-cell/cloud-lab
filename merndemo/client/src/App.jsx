@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from 'react';
 
 function App() {
-    const API_URL = 'http://localhost:5000';
+    const API_URL = 'https://mern-backend-s237915.onrender.com';
 
     const [students, setStudents] = useState([]);
     const [studentId, setStudentId] = useState('');
@@ -11,9 +12,15 @@ function App() {
     const loadStudents = async () => {
         try {
             const response = await fetch(`${API_URL}/api/students`);
+
+            if (!response.ok) {
+                throw new Error('Không thể tải danh sách sinh viên');
+            }
+
             const data = await response.json();
             setStudents(data);
         } catch (error) {
+            console.error('Lỗi tải sinh viên:', error);
             alert('Không thể kết nối Backend!');
         }
     };
@@ -42,8 +49,10 @@ function App() {
             setStudentId('');
             setName('');
             setEmail('');
-            loadStudents();
+
+            await loadStudents();
         } catch (error) {
+            console.error('Lỗi thêm sinh viên:', error);
             alert('Không thể kết nối Backend!');
         }
     };
@@ -79,8 +88,9 @@ function App() {
                 return;
             }
 
-            loadStudents();
+            await loadStudents();
         } catch (error) {
+            console.error('Lỗi cập nhật sinh viên:', error);
             alert('Không thể kết nối Backend!');
         }
     };
@@ -103,8 +113,9 @@ function App() {
                 return;
             }
 
-            loadStudents();
+            await loadStudents();
         } catch (error) {
+            console.error('Lỗi xóa sinh viên:', error);
             alert('Không thể kết nối Backend!');
         }
     };

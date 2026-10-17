@@ -1,14 +1,15 @@
-
 FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 
-RUN npm install
+RUN npm install --omit=dev
 
-COPY server ./server
+COPY server/ ./server/
+
+WORKDIR /app/server
 
 EXPOSE 5000
 
-CMD ["node", "server/server.js"]
+CMD ["node", "server.js"]
